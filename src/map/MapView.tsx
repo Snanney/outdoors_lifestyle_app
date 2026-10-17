@@ -5,6 +5,7 @@ import type { Spot, SpotGeoJSON } from "../lib";
 
 export interface MapViewHandle {
   flyToSpot: (spot: Spot) => void;
+  resize: () => void;
 }
 
 interface Props {
@@ -21,7 +22,7 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { flyToSpot, basemap, ready } = useMapLibre({
+  const { flyToSpot, resize, basemap, ready } = useMapLibre({
     container: containerRef,
     geojson,
     favorites,
@@ -31,7 +32,7 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
     onSelectSpot,
   });
 
-  useImperativeHandle(ref, () => ({ flyToSpot }), [flyToSpot]);
+  useImperativeHandle(ref, () => ({ flyToSpot, resize }), [flyToSpot, resize]);
 
   return (
     <div className="map">

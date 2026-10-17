@@ -11,6 +11,7 @@ import {
 import { ChatWidget } from "./chat";
 import { useFavorites } from "./features/favorites";
 import { useTheme } from "./features/theme";
+import { SettingsPage } from "./features/settings";
 import {
   loadBundledSpots,
   loadLiveSpots,
@@ -21,7 +22,10 @@ import {
   type SpotSource,
 } from "./lib";
 
+type AppView = "explore" | "settings";
+
 export default function App() {
+  const [view, setView] = useState<AppView>("explore");
   const [geojson, setGeojson] = useState<SpotGeoJSON | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [source, setSource] = useState<SpotSource>("bundled");
@@ -40,7 +44,7 @@ export default function App() {
 
   const mapRef = useRef<MapViewHandle | null>(null);
   const { favoriteSet, favoriteIds, isFavorite, toggleFavorite } = useFavorites();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,16 +81,35 @@ export default function App() {
     [spots, selectedId]
   );
 
+  function collapseList() {
+    setPanelOpen(false);
+    // Let the sheet animation start, then tell MapLibre the visible map grew.
+    window.requestAnimationFrame(() => mapRef.current?.resize());
+  }
+
   function handleSelect(id: string) {
     setSelectedId(id);
     const spot = spots.find((s) => s.id === id);
     if (spot) mapRef.current?.flyToSpot(spot);
+    // Drop the list so the pin and callout are unobstructed. The "^" handle
+    // stays visible so the user can pull the list back up.
+    collapseList();
   }
 
   const mapFilters = { type: filters.type, difficulty: filters.difficulty };
 
+  if (view === "settings") {
+    return (
+      <SettingsPage
+        theme={theme}
+        onThemeChange={setTheme}
+        onBack={() => setView("explore")}
+      />
+    );
+  }
+
   return (
-    <div className="app">
+    <div className={`app${panelOpen ? "" : " app--sheet-collapsed"}`}>
       <header className="app__topbar">
         <div className="app__brand">
           <span className="app__logo" aria-hidden="true">
@@ -102,21 +125,11 @@ export default function App() {
           <button
             type="button"
             className="app__icon-btn"
-            onClick={toggleTheme}
-            aria-label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
-            title={theme === "dark" ? "Light mode" : "Dark mode"}
+            onClick={() => setView("settings")}
+            aria-label="Open settings"
+            title="Settings"
           >
-            {theme === "dark" ? "\u2600" : "\u263D"}
-          </button>
-          <button
-            type="button"
-            className="app__panel-toggle"
-            onClick={() => setPanelOpen((o) => !o)}
-            aria-expanded={panelOpen}
-          >
-            {panelOpen ? "Hide list" : "Show list"}
+            {"\u2699\uFE0E"}
           </button>
         </div>
       </header>
@@ -144,49 +157,84 @@ export default function App() {
 
       <div className="app__body">
         <aside className={`sidebar${panelOpen ? "" : " sidebar--collapsed"}`}>
-          <TrailFilters
-            filters={filters}
-            favoritesCount={favoriteIds.length}
-            onChange={setFilters}
-          />
-
-          {selectedSpot && (
-            <TrailDetail
-              spot={selectedSpot}
-              isFavorite={isFavorite(selectedSpot.id)}
-              onToggleFavorite={toggleFavorite}
-              onCenter={(s) => mapRef.current?.flyToSpot(s)}
-              onClose={() => setSelectedId(null)}
-            />
-          )}
-
-          <div className="sidebar__count">
-            {loadError ? (
-              "Could not load data."
-            ) : (
-              <>
-                {`${visibleSpots.length} of ${spots.length} spots`}
-                <span
-                  className={`sidebar__source sidebar__source--${source}`}
-                  title={
-                    source === "live"
-                      ? "Live trail data from OpenStreetMap"
-                      : "Offline sample data"
-                  }
-                >
-                  {source === "live" ? "Live OSM" : "Offline sample"}
+          <button
+            type="button"
+            className="sidebar__handle"
+            onClick={() => setPanelOpen((o) => !o)}
+            aria-expanded={panelOpen}
+            aria-label={panelOpen ? "Collapse trail list" : "Expand trail list"}
+            title={panelOpen ? "Collapse list" : "Expand list"}
+          >
+            <span className="sidebar__grabber" aria-hidden="true" />
+            <span className="sidebar__caret" aria-hidden="true">
+              {panelOpen ? "v" : "^"}
+            </span>
+            {!panelOpen && (
+              <span className="sidebar__peek">
+                <span className="sidebar__peek-name">
+                  {selectedSpot ? selectedSpot.name : "Trail list"}
                 </span>
-              </>
+                {selectedSpot && (
+                  <span className="sidebar__peek-meta">
+                    {selectedSpot.type === "park"
+                      ? "Park"
+                      : selectedSpot.difficulty
+                        ? selectedSpot.difficulty
+                        : "Trail"}
+                    {selectedSpot.length_mi != null
+                      ? ` \u00B7 ${selectedSpot.length_mi} mi`
+                      : ""}
+                  </span>
+                )}
+              </span>
             )}
-          </div>
+          </button>
 
-          <TrailList
-            spots={visibleSpots}
-            selectedId={selectedId}
-            isFavorite={isFavorite}
-            onSelect={handleSelect}
-            onToggleFavorite={toggleFavorite}
-          />
+          <div className="sidebar__scroll">
+            <TrailFilters
+              filters={filters}
+              favoritesCount={favoriteIds.length}
+              onChange={setFilters}
+            />
+
+            {selectedSpot && (
+              <TrailDetail
+                spot={selectedSpot}
+                isFavorite={isFavorite(selectedSpot.id)}
+                onToggleFavorite={toggleFavorite}
+                onCenter={(s) => mapRef.current?.flyToSpot(s)}
+                onClose={() => setSelectedId(null)}
+              />
+            )}
+
+            <div className="sidebar__count">
+              {loadError ? (
+                "Could not load data."
+              ) : (
+                <>
+                  {`${visibleSpots.length} of ${spots.length} spots`}
+                  <span
+                    className={`sidebar__source sidebar__source--${source}`}
+                    title={
+                      source === "live"
+                        ? "Live trail data from OpenStreetMap"
+                        : "Offline sample data"
+                    }
+                  >
+                    {source === "live" ? "Live OSM" : "Offline sample"}
+                  </span>
+                </>
+              )}
+            </div>
+
+            <TrailList
+              spots={visibleSpots}
+              selectedId={selectedId}
+              isFavorite={isFavorite}
+              onSelect={handleSelect}
+              onToggleFavorite={toggleFavorite}
+            />
+          </div>
         </aside>
 
         <main className="app__map">

@@ -320,5 +320,9 @@ export function useMapLibre({
     });
   }
 
-  return { flyToSpot, basemap: getBasemap(theme), ready: loaded };
+  function resize() {
+    mapRef.current?.resize();
+  }
+
+  return { flyToSpot, resize, basemap: getBasemap(theme), ready: loaded };
 }

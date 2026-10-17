@@ -237,14 +237,87 @@ button {
 /* ------------------------------ Sidebar ------------------------------ */
 
 .sidebar {
+  --handle-h: 36px;
+  --handle-collapsed: 76px;
   width: 380px;
   max-width: 92vw;
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.sidebar--collapsed {
+  --handle-h: var(--handle-collapsed);
+}
+
+.sidebar__scroll {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  transition: transform 0.25s ease;
+}
+
+/* Bottom-sheet pull tab. Hidden on wide desktop; shown on phones/tablets. */
+.sidebar__handle {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  height: var(--handle-h);
+  padding: 8px 16px 6px;
+  border: none;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sidebar__grabber {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  transition: background 0.15s ease;
+}
+
+.sidebar__handle:hover .sidebar__grabber {
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.sidebar__caret {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.sidebar__peek {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  max-width: 80%;
+}
+
+.sidebar__peek-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sidebar__peek-meta {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .sidebar__count {
@@ -996,7 +1069,7 @@ button {
 
 /* ----------------------------- Responsive ---------------------------- */
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar {
     position: absolute;
     left: 0;
@@ -1004,7 +1077,7 @@ button {
     bottom: 0;
     width: 100%;
     max-width: 100%;
-    height: 60vh;
+    height: 62vh;
     border-right: none;
     border-top: 1px solid var(--border);
     border-radius: 18px 18px 0 0;
@@ -1012,8 +1085,13 @@ button {
     z-index: 15;
   }
 
+  .sidebar__handle {
+    display: flex;
+  }
+
+  /* Collapse the sheet but leave the "^" pull-tab peeking at the bottom. */
   .sidebar--collapsed {
-    transform: translateY(100%);
+    transform: translateY(calc(100% - var(--handle-h)));
   }
 
   .app__map {
@@ -1026,8 +1104,133 @@ button {
   }
 
   .chat {
-    bottom: 82px;
+    bottom: 96px;
   }
+
+  .app--sheet-collapsed .chat-fab {
+    bottom: 96px;
+  }
+}
+
+/* ----------------------------- Settings page ----------------------------- */
+
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.settings-page__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 12px 7px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-page__back:hover {
+  background: var(--surface-2);
+}
+
+.settings-page__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.settings-page__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 32px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.settings-page__section-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settings-page__card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-page__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-page__label {
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.settings-page__hint {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Segmented control */
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.segmented__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.segmented__btn.is-active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {
