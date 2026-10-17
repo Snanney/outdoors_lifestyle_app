@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { useMapLibre, type MapFilters } from "./useMapLibre";
+import type { BasemapTheme } from "./basemap";
 import type { Spot, SpotGeoJSON } from "../lib";
 
 export interface MapViewHandle {
@@ -10,11 +11,12 @@ interface Props {
   geojson: SpotGeoJSON | null;
   favorites: Set<string>;
   filters: MapFilters;
+  theme: BasemapTheme;
   onSelectSpot: (id: string) => void;
 }
 
 export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
-  { geojson, favorites, filters, onSelectSpot },
+  { geojson, favorites, filters, theme, onSelectSpot },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -23,6 +25,7 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
     geojson,
     favorites,
     filters,
+    theme,
     onSelectSpot,
   });
 

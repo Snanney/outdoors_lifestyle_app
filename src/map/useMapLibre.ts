@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl, { type FilterSpecification, type Map } from "maplibre-gl";
-import { getBasemap } from "./basemap";
+import { getBasemap, type BasemapTheme } from "./basemap";
 import {
   LAYERS,
   SOURCE_ID,
@@ -24,6 +24,7 @@ interface UseMapLibreOptions {
   geojson: SpotGeoJSON | null;
   favorites: Set<string>;
   filters: MapFilters;
+  theme: BasemapTheme;
   onSelectSpot: (id: string) => void;
 }
 
@@ -44,33 +45,95 @@ export function useMapLibre({
   geojson,
   favorites,
   filters,
+  theme,
   onSelectSpot,
 }: UseMapLibreOptions) {
   const mapRef = useRef<Map | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const basemap = useMemo(() => getBasemap(), []);
 
-  // Keep the latest select handler without re-registering map events.
+  // Latest props kept in refs so map callbacks never go stale and so we can
+  // re-apply state after a basemap style swap (which wipes custom layers).
+  const geojsonRef = useRef(geojson);
+  geojsonRef.current = geojson;
+  const favoritesRef = useRef(favorites);
+  favoritesRef.current = favorites;
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
   const onSelectRef = useRef(onSelectSpot);
   onSelectRef.current = onSelectSpot;
+
+  const handlersAttachedRef = useRef(false);
+  const appliedThemeRef = useRef<BasemapTheme>(theme);
+
+  function applyFavorites(map: Map) {
+    const gj = geojsonRef.current;
+    if (!gj || !map.getSource(SOURCE_ID)) return;
+    for (const feature of gj.features) {
+      const id = feature.properties.id;
+      map.setFeatureState(
+        { source: SOURCE_ID, id },
+        { favorite: favoritesRef.current.has(id) }
+      );
+    }
+  }
+
+  function applyFilters(map: Map) {
+    const filter = buildFilter(filtersRef.current);
+    for (const layerId of [LAYERS.favoriteRing, LAYERS.circle, LAYERS.label]) {
+      if (map.getLayer(layerId)) map.setFilter(layerId, filter);
+    }
+  }
+
+  /** Adds the GeoJSON source + spot layers (idempotent) and re-applies state. */
+  function addSpotLayers(map: Map) {
+    const gj = geojsonRef.current;
+    if (!gj) return;
+    if (!map.getSource(SOURCE_ID)) {
+      map.addSource(SOURCE_ID, {
+        type: "geojson",
+        data: gj as unknown as GeoJSON.FeatureCollection,
+        promoteId: "id",
+      });
+    }
+    if (!map.getLayer(LAYERS.favoriteRing)) map.addLayer(favoriteRingLayer);
+    if (!map.getLayer(LAYERS.circle)) map.addLayer(circleLayer);
+    if (!map.getLayer(LAYERS.label)) map.addLayer(labelLayer);
+    applyFavorites(map);
+    applyFilters(map);
+  }
+
+  /** Attaches click/hover handlers once; they survive basemap style swaps. */
+  function attachHandlers(map: Map) {
+    if (handlersAttachedRef.current) return;
+    handlersAttachedRef.current = true;
+    map.on("click", LAYERS.circle, (e) => {
+      const id = e.features?.[0]?.properties?.id as string | undefined;
+      if (id) onSelectRef.current(id);
+    });
+    map.on("mouseenter", LAYERS.circle, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", LAYERS.circle, () => {
+      map.getCanvas().style.cursor = "";
+    });
+  }
 
   // 1) Create the map exactly once.
   useEffect(() => {
     if (!container.current || mapRef.current) return;
 
+    const initial = getBasemap(appliedThemeRef.current);
     const map = new maplibregl.Map({
       container: container.current,
-      style: basemap.style,
+      style: initial.style,
       center: UTAH_CENTER,
       zoom: UTAH_ZOOM,
       attributionControl: false,
     });
 
     map.addControl(
-      new maplibregl.AttributionControl({
-        compact: true,
-        customAttribution: basemap.attribution,
-      })
+      new maplibregl.AttributionControl({ compact: true }),
+      "bottom-left"
     );
     map.addControl(
       new maplibregl.NavigationControl({ showCompass: false }),
@@ -84,73 +147,52 @@ export function useMapLibre({
       "top-right"
     );
 
-    map.on("load", () => setLoaded(true));
+    map.on("load", () => {
+      addSpotLayers(map);
+      attachHandlers(map);
+      setLoaded(true);
+    });
     mapRef.current = map;
 
     return () => {
       map.remove();
       mapRef.current = null;
+      handlersAttachedRef.current = false;
       setLoaded(false);
     };
-    // basemap is stable (computed once); container ref identity is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2) Add the data source + layers once the style and data are ready.
+  // 2) Add/refresh the data layers when the data arrives.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !geojson) return;
-    if (map.getSource(SOURCE_ID)) return;
-
-    map.addSource(SOURCE_ID, {
-      type: "geojson",
-      data: geojson as unknown as GeoJSON.FeatureCollection,
-      promoteId: "id",
-    });
-    map.addLayer(favoriteRingLayer);
-    map.addLayer(circleLayer);
-    map.addLayer(labelLayer);
-
-    const handleClick = (e: maplibregl.MapLayerMouseEvent) => {
-      const f = e.features?.[0];
-      const id = f?.properties?.id as string | undefined;
-      if (id) onSelectRef.current(id);
-    };
-    map.on("click", LAYERS.circle, handleClick);
-    map.on("mouseenter", LAYERS.circle, () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-    map.on("mouseleave", LAYERS.circle, () => {
-      map.getCanvas().style.cursor = "";
-    });
+    addSpotLayers(map);
   }, [loaded, geojson]);
 
   // 3) Reflect favorites via feature-state (drives the golden halo layer).
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !loaded || !geojson || !map.getSource(SOURCE_ID)) return;
-    for (const feature of geojson.features) {
-      const id = feature.properties.id;
-      map.setFeatureState(
-        { source: SOURCE_ID, id },
-        { favorite: favorites.has(id) }
-      );
-    }
-  }, [favorites, loaded, geojson]);
+    if (!map || !loaded) return;
+    applyFavorites(map);
+  }, [favorites, loaded]);
 
   // 4) Apply type/difficulty filters to all spot layers.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
-    const filter = buildFilter(filters);
-    for (const layerId of [
-      LAYERS.favoriteRing,
-      LAYERS.circle,
-      LAYERS.label,
-    ]) {
-      if (map.getLayer(layerId)) map.setFilter(layerId, filter);
-    }
+    applyFilters(map);
   }, [filters, loaded]);
+
+  // 5) Swap the basemap when the theme changes, then re-add our layers.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    if (appliedThemeRef.current === theme) return;
+    appliedThemeRef.current = theme;
+    map.setStyle(getBasemap(theme).style);
+    map.once("styledata", () => addSpotLayers(map));
+  }, [theme, loaded]);
 
   function flyToSpot(spot: Spot) {
     const map = mapRef.current;
@@ -163,5 +205,5 @@ export function useMapLibre({
     });
   }
 
-  return { flyToSpot, basemap, ready: loaded };
+  return { flyToSpot, basemap: getBasemap(theme), ready: loaded };
 }

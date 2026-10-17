@@ -50,12 +50,20 @@ export function TrailList({
               />
               <span className="list__text">
                 <span className="list__name">{spot.name}</span>
-                <span className="list__meta">
-                  {spot.type === "park" ? "Park" : "Trail"} &middot;{" "}
-                  {spot.region}
-                  {spot.length_mi != null && <> &middot; {spot.length_mi} mi</>}
-                  {spot.difficulty && <> &middot; {spot.difficulty}</>}
+                <span className="list__pills">
+                  <span className={`pill pill--${spot.type}`}>
+                    {spot.type === "park" ? "Park" : "Trail"}
+                  </span>
+                  {spot.difficulty && (
+                    <span className={`pill pill--${spot.difficulty}`}>
+                      {spot.difficulty}
+                    </span>
+                  )}
+                  {spot.length_mi != null && (
+                    <span className="pill pill--stat">{spot.length_mi} mi</span>
+                  )}
                 </span>
+                <span className="list__meta">{spot.region}</span>
               </span>
             </button>
             <button

@@ -10,6 +10,7 @@ import {
 } from "./features/trails";
 import { ChatWidget } from "./chat";
 import { useFavorites } from "./features/favorites";
+import { useTheme } from "./features/theme";
 import { loadSpots, type Spot, type SpotGeoJSON } from "./lib";
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
 
   const mapRef = useRef<MapViewHandle | null>(null);
   const { favoriteSet, favoriteIds, isFavorite, toggleFavorite } = useFavorites();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     let cancelled = false;
@@ -67,14 +69,27 @@ export default function App() {
           <span className="app__name">Trailhead</span>
           <span className="app__tag">Utah outdoors</span>
         </div>
-        <button
-          type="button"
-          className="app__panel-toggle"
-          onClick={() => setPanelOpen((o) => !o)}
-          aria-expanded={panelOpen}
-        >
-          {panelOpen ? "Hide list" : "Show list"}
-        </button>
+        <div className="app__actions">
+          <button
+            type="button"
+            className="app__icon-btn"
+            onClick={toggleTheme}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? "\u2600" : "\u263D"}
+          </button>
+          <button
+            type="button"
+            className="app__panel-toggle"
+            onClick={() => setPanelOpen((o) => !o)}
+            aria-expanded={panelOpen}
+          >
+            {panelOpen ? "Hide list" : "Show list"}
+          </button>
+        </div>
       </header>
 
       <div className="app__body">
@@ -116,6 +131,7 @@ export default function App() {
             geojson={geojson}
             favorites={favoriteSet}
             filters={mapFilters}
+            theme={theme}
             onSelectSpot={handleSelect}
           />
         </main>
