@@ -1,0 +1,192 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "title": "Utah Outdoor Seed Data",
+    "description": "A small, hand-curated sample of Utah national parks and popular trails. Not exhaustive - just enough to demonstrate the app.",
+    "source": "Approximate public coordinates; for demo purposes only."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-113.0263, 37.2982] },
+      "properties": {
+        "id": "park-zion",
+        "name": "Zion National Park",
+        "type": "park",
+        "difficulty": null,
+        "length_mi": null,
+        "region": "Southwest Utah",
+        "description": "Towering sandstone cliffs, the Virgin River, and iconic hikes like Angels Landing and The Narrows."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.1877, 37.593] },
+      "properties": {
+        "id": "park-bryce",
+        "name": "Bryce Canyon National Park",
+        "type": "park",
+        "difficulty": null,
+        "length_mi": null,
+        "region": "Southern Utah",
+        "description": "Famous for its vast amphitheaters of red-rock hoodoos best seen at sunrise."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.5925, 38.7331] },
+      "properties": {
+        "id": "park-arches",
+        "name": "Arches National Park",
+        "type": "park",
+        "difficulty": null,
+        "length_mi": null,
+        "region": "Eastern Utah",
+        "description": "Home to more than 2,000 natural stone arches, including the iconic Delicate Arch."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.8783, 38.3269] },
+      "properties": {
+        "id": "park-canyonlands",
+        "name": "Canyonlands National Park",
+        "type": "park",
+        "difficulty": null,
+        "length_mi": null,
+        "region": "Eastern Utah",
+        "description": "A rugged landscape of canyons, mesas, and buttes carved by the Colorado and Green rivers."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.1355, 38.3669] },
+      "properties": {
+        "id": "park-capitol-reef",
+        "name": "Capitol Reef National Park",
+        "type": "park",
+        "difficulty": null,
+        "length_mi": null,
+        "region": "South-central Utah",
+        "description": "A hidden gem centered on the Waterpocket Fold, with orchards, cliffs, and slot canyons."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.949, 37.2693] },
+      "properties": {
+        "id": "trail-angels-landing",
+        "name": "Angels Landing",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 4.4,
+        "region": "Zion National Park",
+        "description": "A thrilling, exposed ridge climb with chains and 1,000+ ft drop-offs. Permit required."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.948, 37.285] },
+      "properties": {
+        "id": "trail-the-narrows",
+        "name": "The Narrows (Bottom-Up)",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 9.4,
+        "region": "Zion National Park",
+        "description": "Wade and hike up the Virgin River between soaring canyon walls. Distance depends on turnaround point."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.5203, 38.7436] },
+      "properties": {
+        "id": "trail-delicate-arch",
+        "name": "Delicate Arch Trail",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 3.2,
+        "region": "Arches National Park",
+        "description": "An open slickrock climb to Utah's most famous arch. Little shade - bring water."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.166, 37.6283] },
+      "properties": {
+        "id": "trail-navajo-loop",
+        "name": "Navajo Loop Trail",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 1.3,
+        "region": "Bryce Canyon National Park",
+        "description": "Switchbacks down through Wall Street into a forest of hoodoos."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.165, 37.636] },
+      "properties": {
+        "id": "trail-queens-garden",
+        "name": "Queens Garden Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.8,
+        "region": "Bryce Canyon National Park",
+        "description": "The gentlest descent into the Bryce amphitheater - great for families."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.8686, 38.3886] },
+      "properties": {
+        "id": "trail-mesa-arch",
+        "name": "Mesa Arch Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 0.7,
+        "region": "Canyonlands National Park",
+        "description": "A short loop to a cliff-edge arch framing the canyons - a sunrise photography classic."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.2242, 38.2893] },
+      "properties": {
+        "id": "trail-hickman-bridge",
+        "name": "Hickman Bridge Trail",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 1.8,
+        "region": "Capitol Reef National Park",
+        "description": "A rewarding walk to a 133-ft natural bridge with canyon and river views."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.8766, 40.7956] },
+      "properties": {
+        "id": "trail-ensign-peak",
+        "name": "Ensign Peak Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.0,
+        "region": "Salt Lake City",
+        "description": "A short, steep city hike with sweeping views over the Salt Lake Valley."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.656, 40.636] },
+      "properties": {
+        "id": "trail-donut-falls",
+        "name": "Donut Falls",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 3.0,
+        "region": "Big Cottonwood Canyon",
+        "description": "A popular family hike to a waterfall that pours through a hole in the rock."
+      }
+    }
+  ]
+}
