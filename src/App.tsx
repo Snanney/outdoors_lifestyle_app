@@ -11,7 +11,13 @@ import {
 import { ChatWidget } from "./chat";
 import { useFavorites } from "./features/favorites";
 import { useTheme } from "./features/theme";
-import { loadSpots, type Spot, type SpotGeoJSON } from "./lib";
+import {
+  loadSpots,
+  readJSON,
+  writeJSON,
+  type Spot,
+  type SpotGeoJSON,
+} from "./lib";
 
 export default function App() {
   const [geojson, setGeojson] = useState<SpotGeoJSON | null>(null);
@@ -20,6 +26,14 @@ export default function App() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [noticeDismissed, setNoticeDismissed] = useState<boolean>(() =>
+    readJSON<boolean>("noticeDismissed", false)
+  );
+
+  function dismissNotice() {
+    setNoticeDismissed(true);
+    writeJSON("noticeDismissed", true);
+  }
 
   const mapRef = useRef<MapViewHandle | null>(null);
   const { favoriteSet, favoriteIds, isFavorite, toggleFavorite } = useFavorites();
@@ -67,6 +81,9 @@ export default function App() {
             {"\u26F0"}
           </span>
           <span className="app__name">Trailhead</span>
+          <span className="app__demo-badge" title="Demonstration app">
+            Demo
+          </span>
           <span className="app__tag">Utah outdoors</span>
         </div>
         <div className="app__actions">
@@ -91,6 +108,27 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {!noticeDismissed && (
+        <div className="app__notice" role="note">
+          <span className="app__notice-icon" aria-hidden="true">
+            {"\u26A0"}
+          </span>
+          <span className="app__notice-text">
+            <strong>Demo app.</strong> Trail data is hand-made and approximate,
+            for demonstration only &mdash; don&apos;t rely on it for navigation,
+            planning, or safety.
+          </span>
+          <button
+            type="button"
+            className="app__notice-close"
+            onClick={dismissNotice}
+            aria-label="Dismiss notice"
+          >
+            {"\u2715"}
+          </button>
+        </div>
+      )}
 
       <div className="app__body">
         <aside className={`sidebar${panelOpen ? "" : " sidebar--collapsed"}`}>

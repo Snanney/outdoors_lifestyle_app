@@ -138,7 +138,7 @@ export const intents: Intent[] = [
         ctx.spots.filter((s) => s.type === "park").length
       } parks and ${
         ctx.spots.filter((s) => s.type === "trail").length
-      } trails. It's just enough to show the idea working - more can be added later.`,
+      } trails. Heads up: this is a demo and the data is hand-made and approximate, so please don't take it at face value or use it for navigation.`,
     }),
   },
   {

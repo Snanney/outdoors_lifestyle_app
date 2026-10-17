@@ -1,9 +1,10 @@
 {
   "type": "FeatureCollection",
   "metadata": {
-    "title": "Utah Outdoor Seed Data",
-    "description": "A small, hand-curated sample of Utah national parks and popular trails. Not exhaustive - just enough to demonstrate the app.",
-    "source": "Approximate public coordinates; for demo purposes only."
+    "title": "Utah Outdoor Seed Data (DEMO)",
+    "description": "A small, hand-curated sample of Utah national parks and popular trails for demonstration only.",
+    "provenance": "Hand-authored from general knowledge. Coordinates, distances, and difficulty are APPROXIMATE and were NOT verified against any official source or dataset. Do not use for navigation, planning, or safety decisions.",
+    "disclaimer": "Demo data - not authoritative. Verify everything with official sources (e.g. the NPS, land managers) before relying on it."
   },
   "features": [
     {
@@ -99,6 +100,45 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.9369, 37.2778] },
+      "properties": {
+        "id": "trail-observation-point",
+        "name": "Observation Point",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 8.0,
+        "region": "Zion National Park",
+        "description": "A high viewpoint looking down on Angels Landing and the canyon. Often hiked from the East Mesa trailhead."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.958, 37.2525] },
+      "properties": {
+        "id": "trail-emerald-pools",
+        "name": "Emerald Pools",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 3.0,
+        "region": "Zion National Park",
+        "description": "A family-friendly loop past lower, middle, and upper pools with seasonal waterfalls."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.94, 37.2133] },
+      "properties": {
+        "id": "trail-canyon-overlook",
+        "name": "Canyon Overlook Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.0,
+        "region": "Zion National Park",
+        "description": "A short walk to a big view over lower Zion Canyon, near the east tunnel."
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-109.5203, 38.7436] },
       "properties": {
         "id": "trail-delicate-arch",
@@ -108,6 +148,45 @@
         "length_mi": 3.2,
         "region": "Arches National Park",
         "description": "An open slickrock climb to Utah's most famous arch. Little shade - bring water."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.6064, 38.7906] },
+      "properties": {
+        "id": "trail-landscape-arch",
+        "name": "Landscape Arch",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.9,
+        "region": "Arches National Park",
+        "description": "A mostly flat walk to one of the longest natural stone spans in the world."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.595, 38.7828] },
+      "properties": {
+        "id": "trail-devils-garden",
+        "name": "Devils Garden Loop",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 7.8,
+        "region": "Arches National Park",
+        "description": "A longer loop past multiple arches with some scrambling along narrow fins."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.593, 38.619] },
+      "properties": {
+        "id": "trail-park-avenue",
+        "name": "Park Avenue Trail",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 1.8,
+        "region": "Arches National Park",
+        "description": "A walk down a dramatic canyon lined with towering sandstone walls and monoliths."
       }
     },
     {
@@ -138,6 +217,19 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.168, 37.62] },
+      "properties": {
+        "id": "trail-peekaboo-loop",
+        "name": "Peekaboo Loop",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 5.5,
+        "region": "Bryce Canyon National Park",
+        "description": "A rolling loop deep among the hoodoos, sharing tread with horse trips in season."
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-109.8686, 38.3886] },
       "properties": {
         "id": "trail-mesa-arch",
@@ -151,6 +243,32 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.857, 38.31] },
+      "properties": {
+        "id": "trail-grand-view-point",
+        "name": "Grand View Point Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.8,
+        "region": "Canyonlands National Park",
+        "description": "An easy rim walk on Island in the Sky with sweeping canyon-country panoramas."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.827, 38.153] },
+      "properties": {
+        "id": "trail-chesler-park",
+        "name": "Chesler Park Loop",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 11.0,
+        "region": "Canyonlands National Park",
+        "description": "A demanding loop through the Needles district's colorful spires and the Joint Trail slots."
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-111.2242, 38.2893] },
       "properties": {
         "id": "trail-hickman-bridge",
@@ -160,6 +278,32 @@
         "length_mi": 1.8,
         "region": "Capitol Reef National Park",
         "description": "A rewarding walk to a 133-ft natural bridge with canyon and river views."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.221, 38.283] },
+      "properties": {
+        "id": "trail-cassidy-arch",
+        "name": "Cassidy Arch",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 3.4,
+        "region": "Capitol Reef National Park",
+        "description": "A slickrock climb to an arch you can actually stand on top of, above Grand Wash."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.247, 38.292] },
+      "properties": {
+        "id": "trail-cohab-canyon",
+        "name": "Cohab Canyon Trail",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 3.4,
+        "region": "Capitol Reef National Park",
+        "description": "Switchbacks to a hidden canyon with mini slots and overlooks of the Fruita orchards."
       }
     },
     {
@@ -186,6 +330,71 @@
         "length_mi": 3.0,
         "region": "Big Cottonwood Canyon",
         "description": "A popular family hike to a waterfall that pours through a hole in the rock."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.703, 40.633] },
+      "properties": {
+        "id": "trail-lake-blanche",
+        "name": "Lake Blanche Trail",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 6.9,
+        "region": "Big Cottonwood Canyon",
+        "description": "A steady climb to an alpine lake beneath Sundial Peak - a Wasatch classic."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.616, 40.576] },
+      "properties": {
+        "id": "trail-cecret-lake",
+        "name": "Cecret Lake Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 1.7,
+        "region": "Albion Basin",
+        "description": "A short, scenic hike to a mountain lake, famous for summer wildflowers near Alta."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-111.6457, 40.39] },
+      "properties": {
+        "id": "trail-timpanogos-summit",
+        "name": "Mount Timpanogos Summit",
+        "type": "trail",
+        "difficulty": "hard",
+        "length_mi": 14.0,
+        "region": "Wasatch Range",
+        "description": "A long, strenuous summit day to one of the Wasatch's highest peaks. Start early."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.632, 38.576] },
+      "properties": {
+        "id": "trail-corona-arch",
+        "name": "Corona Arch",
+        "type": "trail",
+        "difficulty": "moderate",
+        "length_mi": 2.4,
+        "region": "Moab",
+        "description": "A slickrock route with safety cables to a huge freestanding arch outside Moab."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-109.74, 38.482] },
+      "properties": {
+        "id": "trail-dead-horse-rim",
+        "name": "Dead Horse Point Rim Trail",
+        "type": "trail",
+        "difficulty": "easy",
+        "length_mi": 4.5,
+        "region": "Dead Horse Point State Park",
+        "description": "An easy rim loop above a gooseneck of the Colorado River with dramatic overlooks."
       }
     }
   ]
