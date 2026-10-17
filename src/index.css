@@ -287,26 +287,46 @@ button {
   pointer-events: none;
 }
 
-/* Name callout above the pin */
+/* Name + stat callout above the pin */
 .trail-pin__label {
   position: absolute;
   left: 50%;
   bottom: 44px;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   max-width: 220px;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 5px 11px;
+  border-radius: 12px;
   background: var(--surface, #fff);
   color: var(--text, #1b1b1b);
   border: 1px solid color-mix(in srgb, var(--pin-color) 55%, transparent);
-  font-size: 12px;
-  font-weight: 600;
   line-height: 1.2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+.trail-pin__name {
+  max-width: 198px;
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-  pointer-events: none;
+}
+
+.trail-pin__meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pin-color);
+}
+
+.trail-pin__meta:empty {
+  display: none;
 }
 
 /* Little pointer connecting the callout to the pin head */

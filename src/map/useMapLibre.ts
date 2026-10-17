@@ -20,6 +20,7 @@ import {
   type FeatureType,
   type Spot,
   type SpotGeoJSON,
+  type SpotProperties,
 } from "../lib";
 
 /** Rough center + zoom that frames the state of Utah on first load. */
@@ -62,12 +63,29 @@ function colorForFeature(type: FeatureType, difficulty: Difficulty | null): stri
   return COLORS.selected;
 }
 
+/** A short "Difficulty · 4.4 mi" line for the pin callout. */
+function metaForFeature(props: SpotProperties): string {
+  const parts: string[] = [];
+  if (props.type === "park") {
+    parts.push("Park");
+  } else if (props.difficulty) {
+    parts.push(props.difficulty.charAt(0).toUpperCase() + props.difficulty.slice(1));
+  } else {
+    parts.push("Trail");
+  }
+  if (props.length_mi != null) parts.push(`${props.length_mi} mi`);
+  return parts.join(" \u00B7 ");
+}
+
 /** Builds the DOM element for the big, animated "you selected this" pin. */
 function createPinElement(): HTMLDivElement {
   const el = document.createElement("div");
   el.className = "trail-pin";
   el.innerHTML =
-    '<span class="trail-pin__label"></span>' +
+    '<span class="trail-pin__label">' +
+    '<span class="trail-pin__name"></span>' +
+    '<span class="trail-pin__meta"></span>' +
+    "</span>" +
     '<span class="trail-pin__pulse"></span>' +
     '<span class="trail-pin__teardrop"></span>';
   return el;
@@ -153,8 +171,10 @@ export function useMapLibre({
       }
       const el = markerRef.current.getElement();
       el.style.setProperty("--pin-color", color);
-      const label = el.querySelector(".trail-pin__label");
-      if (label) label.textContent = feature.properties.name;
+      const nameEl = el.querySelector(".trail-pin__name");
+      if (nameEl) nameEl.textContent = feature.properties.name;
+      const metaEl = el.querySelector(".trail-pin__meta");
+      if (metaEl) metaEl.textContent = metaForFeature(feature.properties);
       // Restart the drop animation on each new selection.
       el.classList.remove("trail-pin--drop");
       void el.offsetWidth;
