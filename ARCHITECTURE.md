@@ -1,8 +1,12 @@
-# Architecture & Decisions
+# Architecture Overview
 
-This document records the key decisions behind Trailhead and *why* we made them,
-so future changes are made with context. It's a living document - edit it as the
-app evolves (add a dated note when a decision changes).
+This document gives the high-level picture of Trailhead and ties together the
+individual decisions. The *why* behind each decision now lives as an
+Architecture Decision Record (ADR) in [`docs/adr/`](./docs/adr/) - see the
+[decision index](#decision-records) below.
+
+> This file is meant to be edited by both of us. Keep it as the map of the
+> system; record new decisions as ADRs rather than expanding this file.
 
 ## Goals
 
@@ -10,90 +14,68 @@ app evolves (add a dated note when a decision changes).
 - **Map-first** experience built on **MapLibre**.
 - A **"lite" AI chatbot** that needs **no API keys** and no external AI service.
 - Start small: a **Utah-only** seed dataset, just enough to prove the idea.
-- Trackable progress via [`TODO.md`](./TODO.md) and shared docs.
+- Decisions tracked as ADRs; tasks tracked in [`TODO.md`](./TODO.md).
 
-## Decision log
+## Modules
 
-### 1. Stack: React + Vite + TypeScript
-- **Why:** Fast dev server and build (Vite), strong typing (TypeScript), and a
-  huge ecosystem for maps and UI (React). Good fit for a component-driven,
-  map-centric UI.
-- **Alternatives considered:** Vue, Svelte, vanilla JS, Next.js. We don't need
-  SSR or a backend yet, so Next.js was overkill; vanilla would slow feature work.
+The app is organized into modules, each exposing a small public interface via an
+`index.ts` barrel (see [ADR-0008](./docs/adr/0008-module-public-interfaces.md)).
+Cross-module code imports only from these barrels; deep paths are reserved for a
+module's own internals.
 
-### 2. Delivery: Installable PWA
-- **Why:** One responsive web app installs to desktop and mobile home screens,
-  works offline, and avoids app-store friction. Matches "pull up on computers and
-  phones/tablets."
-- **How:** `vite-plugin-pwa` (Workbox) generates the manifest + service worker.
-  We precache the app shell and seed data, and runtime-cache basemap tiles
-  (`CacheFirst`) so a previously viewed area still renders offline.
-- **Alternatives considered:** plain responsive site (no offline/install), or
-  wrapping in Capacitor for native (deferred - can layer on later).
-
-### 3. Map basemap: MapTiler key with keyless OpenFreeMap fallback
-- **Why:** The user is fine with non-AI API keys, and MapTiler's "Outdoor" style
-  looks great for this use case. But we never want a missing key to break the
-  app, so when `VITE_MAPTILER_KEY` is absent we fall back to the keyless
-  OpenFreeMap style. See `src/map/basemap.ts`.
-- **Trade-off:** Two possible styles to reason about, but the app always runs.
-
-### 4. Data: bundled Utah GeoJSON seed
-- **Why:** The ask was "something that pulls only from the Utah area, nothing
-  crazy big." A local `public/data/utah-trails.geojson` is fully offline,
-  instant, and trivial to extend. No external data dependency to break.
-- **Shape:** Point features with `id, name, type, difficulty, length_mi, region,
-  description`. `type` is `park | trail`; parks have `null` difficulty/length.
-- **Future:** Could add live OpenStreetMap/Overpass queries or official park
-  APIs later without changing the UI, by swapping the loader in `src/lib/spots.ts`.
-
-### 5. Persistence: device-local only
-- **Why:** Discovery + favorites don't need accounts or a server. `localStorage`
-  (wrapped in `src/lib/storage.ts`) keeps favorites on-device and fails safe if
-  storage is unavailable.
-- **Future:** If sync/accounts are ever needed, the favorites hook is the single
-  integration point.
-
-### 6. Chatbot: rule-based, fully offline
-- **Why:** The explicit requirement was a "lite AI... not a big one, no API keys."
-  A small intent-matching engine is instant, private, zero-cost, and works
-  offline. See `src/chat/chatEngine.ts` and `src/chat/intents.ts`.
-- **How it works:** Normalize the message, run ordered intent matchers (regex),
-  first match wins; otherwise a friendly fallback. Several intents are
-  data-driven (e.g. "easy trails", "what's in Zion?") and read from the same seed
-  data the map uses, so answers stay in sync.
-- **Future option:** If we ever want more natural replies, we could add a small
-  in-browser model (e.g. WebLLM/transformers.js) behind the same `getReply`
-  interface - still no server keys. Deliberately deferred to keep it lightweight.
+| Module | Public interface | Responsibility |
+| --- | --- | --- |
+| `lib` | `src/lib/index.ts` | Shared types, storage, data loader, design tokens (`COLORS`) |
+| `map` | `src/map/index.ts` | MapLibre map (`MapView`, `MapViewHandle`) |
+| `features/trails` | `src/features/trails/index.ts` | List, filters, detail, filter logic |
+| `features/favorites` | `src/features/favorites/index.ts` | Local favorites hook |
+| `chat` | `src/chat/index.ts` | Offline rule-based chatbot widget |
 
 ## Data flow
 
 ```mermaid
 flowchart TD
-    Seed["public/data/utah-trails.geojson"] --> Loader["lib/spots.ts loader"]
+    Seed["public/data/utah-trails.geojson"] --> Loader["lib: loadSpots()"]
     Loader --> AppState["App state (spots, geojson)"]
-    AppState --> MapView["MapView + useMapLibre (MapLibre)"]
-    AppState --> ListUI["Filters / List / Detail"]
-    AppState --> Chat["ChatWidget -> chatEngine/intents"]
-    Favorites["useFavorites (localStorage)"] --> MapView
-    Favorites --> ListUI
-    MapView -->|click| Select["selectedId"]
-    ListUI -->|click| Select
-    Chat -->|chip| Select
-    Select --> MapView
+    AppState --> MapMod["map: MapView + useMapLibre"]
+    AppState --> TrailsMod["features/trails: Filters / List / Detail"]
+    AppState --> ChatMod["chat: ChatWidget -> getReply"]
+    FavMod["features/favorites: useFavorites (localStorage)"] --> MapMod
+    FavMod --> TrailsMod
+    MapMod -->|click| Select["selectedId"]
+    TrailsMod -->|click| Select
+    ChatMod -->|chip| Select
+    Select --> MapMod
 ```
 
 ## Notable implementation choices
 
-- **Feature-state for favorites:** the map source uses `promoteId: "id"` and we
-  drive a golden "favorite ring" layer via `setFeatureState`, avoiding per-change
-  source reloads. See `src/map/layers.ts` and `src/map/useMapLibre.ts`.
+- **Feature-state for favorites:** the map source uses `promoteId: "id"` and a
+  golden "favorite ring" layer is driven via `setFeatureState`, avoiding
+  per-change source reloads. See `src/map/layers.ts` and `src/map/useMapLibre.ts`.
 - **Single source of truth for filters:** `src/features/trails/filters.ts` holds
   the `Filters` type and `applyFilters` used by the list, while the map receives
   just `type`/`difficulty` for its native layer filters.
-- **Imperative map handle:** `MapView` exposes `flyToSpot` via `useImperativeHandle`
-  so selecting from the list/chat recenters the map without prop-drilling the map
-  instance.
+- **Imperative map handle:** `MapView` exposes `flyToSpot` via
+  `useImperativeHandle` so selecting from the list/chat recenters the map without
+  prop-drilling the map instance.
+- **Shared design tokens:** `COLORS` lives in `lib` so both the map layers and the
+  list legend use the same palette without crossing module internals.
+
+## Decision records
+
+The full rationale for each decision is in [`docs/adr/`](./docs/adr/):
+
+| ADR | Title |
+| --- | --- |
+| [0001](./docs/adr/0001-record-architecture-decisions.md) | Record architecture decisions using MADR |
+| [0002](./docs/adr/0002-use-react-vite-typescript.md) | Use React + Vite + TypeScript |
+| [0003](./docs/adr/0003-deliver-as-installable-pwa.md) | Deliver the app as an installable PWA |
+| [0004](./docs/adr/0004-maptiler-basemap-with-openfreemap-fallback.md) | MapTiler basemap with a keyless OpenFreeMap fallback |
+| [0005](./docs/adr/0005-bundle-utah-geojson-seed-data.md) | Bundle a small Utah GeoJSON seed dataset |
+| [0006](./docs/adr/0006-device-local-persistence.md) | Store user data device-locally only |
+| [0007](./docs/adr/0007-rule-based-offline-chatbot.md) | Use a rule-based offline chatbot (no API keys) |
+| [0008](./docs/adr/0008-module-public-interfaces.md) | Expose module public interfaces via barrel files |
 
 ## Known limitations (by design, for now)
 

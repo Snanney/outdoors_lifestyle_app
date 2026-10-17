@@ -1,5 +1,4 @@
-import type { Spot } from "../../lib/types";
-import { COLORS } from "../../map/layers";
+import { type Spot, COLORS } from "../../lib";
 
 interface Props {
   spots: Spot[];

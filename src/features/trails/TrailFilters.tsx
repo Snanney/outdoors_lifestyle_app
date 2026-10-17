@@ -1,5 +1,5 @@
 import type { Filters } from "./filters";
-import type { Difficulty, FeatureType } from "../../lib/types";
+import type { Difficulty, FeatureType } from "../../lib";
 
 interface Props {
   filters: Filters;

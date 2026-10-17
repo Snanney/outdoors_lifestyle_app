@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getReply, SUGGESTIONS, WELCOME_MESSAGE } from "./chatEngine";
-import type { Spot } from "../lib/types";
+import type { Spot } from "../lib";
 
 interface ChatMessage {
   id: number;

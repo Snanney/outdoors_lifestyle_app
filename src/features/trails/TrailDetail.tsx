@@ -1,4 +1,4 @@
-import type { Spot } from "../../lib/types";
+import type { Spot } from "../../lib";
 
 interface Props {
   spot: Spot;

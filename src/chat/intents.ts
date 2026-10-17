@@ -1,4 +1,4 @@
-import type { Difficulty, Spot } from "../lib/types";
+import type { Difficulty, Spot } from "../lib";
 
 export interface ChatContext {
   spots: Spot[];

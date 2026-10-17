@@ -8,7 +8,7 @@ import {
   favoriteRingLayer,
   labelLayer,
 } from "./layers";
-import type { Difficulty, FeatureType, Spot, SpotGeoJSON } from "../lib/types";
+import type { Difficulty, FeatureType, Spot, SpotGeoJSON } from "../lib";
 
 /** Rough center + zoom that frames the state of Utah on first load. */
 const UTAH_CENTER: [number, number] = [-111.0937, 39.321];

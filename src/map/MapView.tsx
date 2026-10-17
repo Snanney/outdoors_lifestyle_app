@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { useMapLibre, type MapFilters } from "./useMapLibre";
-import type { Spot, SpotGeoJSON } from "../lib/types";
+import type { Spot, SpotGeoJSON } from "../lib";
 
 export interface MapViewHandle {
   flyToSpot: (spot: Spot) => void;

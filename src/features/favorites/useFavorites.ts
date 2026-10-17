@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { readJSON, writeJSON } from "../../lib/storage";
+import { readJSON, writeJSON } from "../../lib";
 
 const STORAGE_KEY = "favorites";
 

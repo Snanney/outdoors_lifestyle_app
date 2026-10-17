@@ -1,4 +1,4 @@
-import type { Difficulty, FeatureType, Spot } from "../../lib/types";
+import type { Difficulty, FeatureType, Spot } from "../../lib";
 
 export interface Filters {
   query: string;

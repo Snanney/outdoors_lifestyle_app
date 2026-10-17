@@ -2,6 +2,7 @@ import type {
   CircleLayerSpecification,
   SymbolLayerSpecification,
 } from "maplibre-gl";
+import { COLORS } from "../lib";
 
 export const SOURCE_ID = "spots";
 
@@ -9,15 +10,6 @@ export const LAYERS = {
   favoriteRing: "spots-favorite-ring",
   circle: "spots-circle",
   label: "spots-label",
-} as const;
-
-// Color palette shared with the UI legend.
-export const COLORS = {
-  park: "#2f8f5b",
-  easy: "#3aa655",
-  moderate: "#e0a500",
-  hard: "#d1483c",
-  favorite: "#ffd24a",
 } as const;
 
 /**

@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapView, type MapViewHandle } from "./map/MapView";
-import { TrailFilters } from "./features/trails/TrailFilters";
-import { TrailList } from "./features/trails/TrailList";
-import { TrailDetail } from "./features/trails/TrailDetail";
-import { ChatWidget } from "./chat/ChatWidget";
-import { useFavorites } from "./features/favorites/useFavorites";
-import { applyFilters, DEFAULT_FILTERS, type Filters } from "./features/trails/filters";
-import { loadSpots } from "./lib/spots";
-import type { Spot, SpotGeoJSON } from "./lib/types";
+import { MapView, type MapViewHandle } from "./map";
+import {
+  TrailFilters,
+  TrailList,
+  TrailDetail,
+  applyFilters,
+  DEFAULT_FILTERS,
+  type Filters,
+} from "./features/trails";
+import { ChatWidget } from "./chat";
+import { useFavorites } from "./features/favorites";
+import { loadSpots, type Spot, type SpotGeoJSON } from "./lib";
 
 export default function App() {
   const [geojson, setGeojson] = useState<SpotGeoJSON | null>(null);
