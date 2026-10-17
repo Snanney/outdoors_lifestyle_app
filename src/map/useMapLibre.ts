@@ -53,6 +53,25 @@ function buildFilter(filters: MapFilters): FilterSpecification | null {
   return ["all", ...clauses] as unknown as FilterSpecification;
 }
 
+/** Picks a marker color that matches the spot's type/difficulty legend. */
+function colorForFeature(type: FeatureType, difficulty: Difficulty | null): string {
+  if (type === "park") return COLORS.park;
+  if (difficulty === "easy") return COLORS.easy;
+  if (difficulty === "moderate") return COLORS.moderate;
+  if (difficulty === "hard") return COLORS.hard;
+  return COLORS.selected;
+}
+
+/** Builds the DOM element for the big, animated "you selected this" pin. */
+function createPinElement(): HTMLDivElement {
+  const el = document.createElement("div");
+  el.className = "trail-pin";
+  el.innerHTML =
+    '<span class="trail-pin__pulse"></span>' +
+    '<span class="trail-pin__teardrop"></span>';
+  return el;
+}
+
 export function useMapLibre({
   container,
   geojson,
@@ -124,9 +143,19 @@ export function useMapLibre({
       : undefined;
     if (feature) {
       const [lng, lat] = feature.geometry.coordinates;
+      const color = colorForFeature(feature.properties.type, feature.properties.difficulty);
       if (!markerRef.current) {
-        markerRef.current = new maplibregl.Marker({ color: COLORS.selected });
+        markerRef.current = new maplibregl.Marker({
+          element: createPinElement(),
+          anchor: "bottom",
+        });
       }
+      const el = markerRef.current.getElement();
+      el.style.setProperty("--pin-color", color);
+      // Restart the drop animation on each new selection.
+      el.classList.remove("trail-pin--drop");
+      void el.offsetWidth;
+      el.classList.add("trail-pin--drop");
       markerRef.current.setLngLat([lng, lat]).addTo(map);
     } else if (markerRef.current) {
       markerRef.current.remove();

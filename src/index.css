@@ -278,6 +278,94 @@ button {
   color: var(--muted);
 }
 
+/* Selected-trail map pin (dropped marker) */
+.trail-pin {
+  --pin-color: #2f6fdb;
+  position: relative;
+  width: 34px;
+  height: 46px;
+  pointer-events: none;
+}
+
+.trail-pin__teardrop {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  background: var(--pin-color);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Inner dot */
+.trail-pin__teardrop::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+/* Pulsing ring at the pin's base to draw the eye */
+.trail-pin__pulse {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pin-color) 55%, transparent);
+  transform: translateZ(0);
+  animation: trail-pin-pulse 1.8s ease-out infinite;
+}
+
+@keyframes trail-pin-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Drop-in bounce when a new spot is selected */
+.trail-pin--drop .trail-pin__teardrop {
+  animation: trail-pin-drop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+
+@keyframes trail-pin-drop {
+  0% {
+    transform: rotate(-45deg) translateY(-26px);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-45deg) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trail-pin__pulse,
+  .trail-pin--drop .trail-pin__teardrop {
+    animation: none;
+  }
+}
+
 .app__map {
   flex: 1;
   min-width: 0;
