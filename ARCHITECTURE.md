@@ -29,6 +29,7 @@ module's own internals.
 | `map` | `src/map/index.ts` | MapLibre map (`MapView`, `MapViewHandle`) |
 | `features/trails` | `src/features/trails/index.ts` | List, filters, detail, filter logic |
 | `features/favorites` | `src/features/favorites/index.ts` | Local favorites hook |
+| `features/theme` | `src/features/theme/index.ts` | Light/dark theme hook (system default, persisted) |
 | `chat` | `src/chat/index.ts` | Offline rule-based chatbot widget |
 
 ## Data flow
@@ -76,6 +77,7 @@ The full rationale for each decision is in [`docs/adr/`](./docs/adr/):
 | [0006](./docs/adr/0006-device-local-persistence.md) | Store user data device-locally only |
 | [0007](./docs/adr/0007-rule-based-offline-chatbot.md) | Use a rule-based offline chatbot (no API keys) |
 | [0008](./docs/adr/0008-module-public-interfaces.md) | Expose module public interfaces via barrel files |
+| [0009](./docs/adr/0009-dark-mode-and-visual-theming.md) | Dark mode and AllTrails-inspired visual theming |
 
 ## Known limitations (by design, for now)
 

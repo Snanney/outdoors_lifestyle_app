@@ -44,3 +44,4 @@ ties these decisions together.
 | [0006](0006-device-local-persistence.md) | Store user data device-locally only | accepted |
 | [0007](0007-rule-based-offline-chatbot.md) | Use a rule-based offline chatbot (no API keys) | accepted |
 | [0008](0008-module-public-interfaces.md) | Expose module public interfaces via barrel files | accepted |
+| [0009](0009-dark-mode-and-visual-theming.md) | Dark mode and AllTrails-inspired visual theming | accepted |
