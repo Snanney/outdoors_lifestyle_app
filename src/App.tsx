@@ -55,7 +55,12 @@ export default function App() {
         if (cancelled) return;
         setGeojson(bundled.geojson);
         setSpots(bundled.spots);
-        return loadLiveSpots();
+        return loadLiveSpots((partial) => {
+          if (cancelled) return;
+          setGeojson(partial.geojson);
+          setSpots(partial.spots);
+          setSource(partial.source);
+        });
       })
       .then((live) => {
         if (cancelled || !live) return;

@@ -46,3 +46,5 @@ ties these decisions together.
 | [0008](0008-module-public-interfaces.md) | Expose module public interfaces via barrel files | accepted |
 | [0009](0009-dark-mode-and-visual-theming.md) | Dark mode and AllTrails-inspired visual theming | accepted |
 | [0010](0010-live-osm-overpass-data.md) | Upgrade to live OpenStreetMap trail data via Overpass | accepted |
+| [0011](0011-expand-live-osm-sample.md) | Expand the live OSM sample with a second Overpass wave | accepted |
+| [0011](0011-expand-live-osm-sample.md) | Expand the live OSM sample with a second Overpass wave | accepted |

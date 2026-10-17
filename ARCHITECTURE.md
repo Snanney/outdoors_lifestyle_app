@@ -65,8 +65,9 @@ flowchart TD
 - **Shared design tokens:** `COLORS` lives in `lib` so both the map layers and the
   list legend use the same palette without crossing module internals.
 - **Progressive data load:** `App` renders the bundled seed immediately, then
-  calls `loadLiveSpots()` (Overpass) and swaps in live OSM trails if reachable,
-  falling back to the seed otherwise. A sidebar badge shows the active source.
+  `loadLiveSpots()` upgrades in two Overpass waves — official hiking routes
+  first, then named hiking paths — up to ~500 trails. A sidebar badge shows
+  the active source. See ADR-0010 and ADR-0011.
 - **Selected pin + highlight:** selecting a spot sets a `selected` feature-state
   (driving a blue highlight ring layer) and drops a MapLibre `Marker` at the
   spot. See `applySelected` in `src/map/useMapLibre.ts`.
@@ -87,6 +88,7 @@ The full rationale for each decision is in [`docs/adr/`](./docs/adr/):
 | [0008](./docs/adr/0008-module-public-interfaces.md) | Expose module public interfaces via barrel files |
 | [0009](./docs/adr/0009-dark-mode-and-visual-theming.md) | Dark mode and AllTrails-inspired visual theming |
 | [0010](./docs/adr/0010-live-osm-overpass-data.md) | Upgrade to live OpenStreetMap trail data via Overpass |
+| [0011](./docs/adr/0011-expand-live-osm-sample.md) | Expand the live OSM sample with a second Overpass wave |
 
 ## Known limitations (by design, for now)
 

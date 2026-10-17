@@ -15,4 +15,5 @@ export { readJSON, writeJSON } from "./storage";
 export { loadBundledSpots, toGeoJSON } from "./spots";
 export type { SpotSource, LoadedSpots } from "./spots";
 export { loadLiveSpots } from "./overpass";
+export type { LiveProgress } from "./overpass";
 export { COLORS } from "./colors";
