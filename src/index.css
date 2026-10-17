@@ -287,6 +287,43 @@ button {
   pointer-events: none;
 }
 
+/* Name callout above the pin */
+.trail-pin__label {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  transform: translateX(-50%);
+  max-width: 220px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: var(--text, #1b1b1b);
+  border: 1px solid color-mix(in srgb, var(--pin-color) 55%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+/* Little pointer connecting the callout to the pin head */
+.trail-pin__label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background: var(--surface, #fff);
+  border-right: 1px solid color-mix(in srgb, var(--pin-color) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pin-color) 55%, transparent);
+  transform: rotate(45deg);
+}
+
 .trail-pin__teardrop {
   position: absolute;
   left: 50%;

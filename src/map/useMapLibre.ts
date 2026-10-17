@@ -67,6 +67,7 @@ function createPinElement(): HTMLDivElement {
   const el = document.createElement("div");
   el.className = "trail-pin";
   el.innerHTML =
+    '<span class="trail-pin__label"></span>' +
     '<span class="trail-pin__pulse"></span>' +
     '<span class="trail-pin__teardrop"></span>';
   return el;
@@ -152,6 +153,8 @@ export function useMapLibre({
       }
       const el = markerRef.current.getElement();
       el.style.setProperty("--pin-color", color);
+      const label = el.querySelector(".trail-pin__label");
+      if (label) label.textContent = feature.properties.name;
       // Restart the drop animation on each new selection.
       el.classList.remove("trail-pin--drop");
       void el.offsetWidth;
