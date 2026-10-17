@@ -54,6 +54,21 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // Live OSM trail data from the Overpass API. Prefer fresh data but
+            // fall back to the last response when offline.
+            urlPattern: ({ url }) => url.hostname.includes("overpass-api.de"),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "overpass-trails",
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
       devOptions: {

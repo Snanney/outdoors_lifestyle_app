@@ -12,11 +12,12 @@ interface Props {
   favorites: Set<string>;
   filters: MapFilters;
   theme: BasemapTheme;
+  selectedId: string | null;
   onSelectSpot: (id: string) => void;
 }
 
 export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
-  { geojson, favorites, filters, theme, onSelectSpot },
+  { geojson, favorites, filters, theme, selectedId, onSelectSpot },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -26,6 +27,7 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
     favorites,
     filters,
     theme,
+    selectedId,
     onSelectSpot,
   });
 

@@ -12,5 +12,7 @@ export type {
   SpotGeoJSON,
 } from "./types";
 export { readJSON, writeJSON } from "./storage";
-export { loadSpots } from "./spots";
+export { loadBundledSpots, toGeoJSON } from "./spots";
+export type { SpotSource, LoadedSpots } from "./spots";
+export { loadLiveSpots } from "./overpass";
 export { COLORS } from "./colors";

@@ -7,6 +7,7 @@ import { COLORS } from "../lib";
 export const SOURCE_ID = "spots";
 
 export const LAYERS = {
+  selectedRing: "spots-selected-ring",
   favoriteRing: "spots-favorite-ring",
   circle: "spots-circle",
   label: "spots-label",
@@ -69,6 +70,38 @@ export const favoriteRingLayer: CircleLayerSpecification = {
       "case",
       ["boolean", ["feature-state", "favorite"], false],
       0.9,
+      0,
+    ],
+  },
+};
+
+/** A highlight ring rendered only for the currently selected feature. */
+export const selectedRingLayer: CircleLayerSpecification = {
+  id: LAYERS.selectedRing,
+  type: "circle",
+  source: SOURCE_ID,
+  paint: {
+    "circle-radius": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      4,
+      ["case", ["==", ["get", "type"], "park"], 13, 10],
+      10,
+      ["case", ["==", ["get", "type"], "park"], 20, 15],
+    ],
+    "circle-color": COLORS.selected,
+    "circle-opacity": [
+      "case",
+      ["boolean", ["feature-state", "selected"], false],
+      0.18,
+      0,
+    ],
+    "circle-stroke-color": COLORS.selected,
+    "circle-stroke-width": [
+      "case",
+      ["boolean", ["feature-state", "selected"], false],
+      3,
       0,
     ],
   },

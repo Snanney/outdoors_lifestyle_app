@@ -11,4 +11,6 @@ export const COLORS = {
   moderate: "#e0a500",
   hard: "#d1483c",
   favorite: "#ffd24a",
+  /** Highlight color for the currently selected spot (ring + dropped pin). */
+  selected: "#2f6fdb",
 } as const;

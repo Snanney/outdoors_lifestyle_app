@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import maplibregl, { type FilterSpecification, type Map } from "maplibre-gl";
+import maplibregl, {
+  type FilterSpecification,
+  type GeoJSONSource,
+  type Map,
+  type Marker,
+} from "maplibre-gl";
 import { getBasemap, type BasemapTheme } from "./basemap";
 import {
   LAYERS,
@@ -7,8 +12,15 @@ import {
   circleLayer,
   favoriteRingLayer,
   labelLayer,
+  selectedRingLayer,
 } from "./layers";
-import type { Difficulty, FeatureType, Spot, SpotGeoJSON } from "../lib";
+import {
+  COLORS,
+  type Difficulty,
+  type FeatureType,
+  type Spot,
+  type SpotGeoJSON,
+} from "../lib";
 
 /** Rough center + zoom that frames the state of Utah on first load. */
 const UTAH_CENTER: [number, number] = [-111.0937, 39.321];
@@ -25,6 +37,7 @@ interface UseMapLibreOptions {
   favorites: Set<string>;
   filters: MapFilters;
   theme: BasemapTheme;
+  selectedId: string | null;
   onSelectSpot: (id: string) => void;
 }
 
@@ -46,19 +59,23 @@ export function useMapLibre({
   favorites,
   filters,
   theme,
+  selectedId,
   onSelectSpot,
 }: UseMapLibreOptions) {
   const mapRef = useRef<Map | null>(null);
+  const markerRef = useRef<Marker | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Latest props kept in refs so map callbacks never go stale and so we can
-  // re-apply state after a basemap style swap (which wipes custom layers).
+  // Latest props in refs so map callbacks never go stale and so we can
+  // re-apply state after a basemap swap or data update (both reset state).
   const geojsonRef = useRef(geojson);
   geojsonRef.current = geojson;
   const favoritesRef = useRef(favorites);
   favoritesRef.current = favorites;
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
   const onSelectRef = useRef(onSelectSpot);
   onSelectRef.current = onSelectSpot;
 
@@ -79,27 +96,64 @@ export function useMapLibre({
 
   function applyFilters(map: Map) {
     const filter = buildFilter(filtersRef.current);
-    for (const layerId of [LAYERS.favoriteRing, LAYERS.circle, LAYERS.label]) {
+    for (const layerId of [
+      LAYERS.selectedRing,
+      LAYERS.favoriteRing,
+      LAYERS.circle,
+      LAYERS.label,
+    ]) {
       if (map.getLayer(layerId)) map.setFilter(layerId, filter);
     }
   }
 
-  /** Adds the GeoJSON source + spot layers (idempotent) and re-applies state. */
+  /** Highlights the selected spot (feature-state) and drops a pin on it. */
+  function applySelected(map: Map) {
+    const gj = geojsonRef.current;
+    if (!gj || !map.getSource(SOURCE_ID)) return;
+    const selected = selectedIdRef.current;
+    for (const feature of gj.features) {
+      const id = feature.properties.id;
+      map.setFeatureState(
+        { source: SOURCE_ID, id },
+        { selected: id === selected }
+      );
+    }
+
+    const feature = selected
+      ? gj.features.find((f) => f.properties.id === selected)
+      : undefined;
+    if (feature) {
+      const [lng, lat] = feature.geometry.coordinates;
+      if (!markerRef.current) {
+        markerRef.current = new maplibregl.Marker({ color: COLORS.selected });
+      }
+      markerRef.current.setLngLat([lng, lat]).addTo(map);
+    } else if (markerRef.current) {
+      markerRef.current.remove();
+    }
+  }
+
+  /** Adds (or refreshes) the GeoJSON source + spot layers and re-applies state. */
   function addSpotLayers(map: Map) {
     const gj = geojsonRef.current;
     if (!gj) return;
-    if (!map.getSource(SOURCE_ID)) {
+    const existing = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    if (existing) {
+      existing.setData(gj as unknown as GeoJSON.FeatureCollection);
+    } else {
       map.addSource(SOURCE_ID, {
         type: "geojson",
         data: gj as unknown as GeoJSON.FeatureCollection,
         promoteId: "id",
       });
     }
+    if (!map.getLayer(LAYERS.selectedRing)) map.addLayer(selectedRingLayer);
     if (!map.getLayer(LAYERS.favoriteRing)) map.addLayer(favoriteRingLayer);
     if (!map.getLayer(LAYERS.circle)) map.addLayer(circleLayer);
     if (!map.getLayer(LAYERS.label)) map.addLayer(labelLayer);
     applyFavorites(map);
     applyFilters(map);
+    applySelected(map);
   }
 
   /** Attaches click/hover handlers once; they survive basemap style swaps. */
@@ -155,6 +209,8 @@ export function useMapLibre({
     mapRef.current = map;
 
     return () => {
+      markerRef.current?.remove();
+      markerRef.current = null;
       map.remove();
       mapRef.current = null;
       handlersAttachedRef.current = false;
@@ -163,7 +219,7 @@ export function useMapLibre({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2) Add/refresh the data layers when the data arrives.
+  // 2) Add/refresh the data layers when the data arrives or changes.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !geojson) return;
@@ -184,7 +240,14 @@ export function useMapLibre({
     applyFilters(map);
   }, [filters, loaded]);
 
-  // 5) Swap the basemap when the theme changes, then re-add our layers.
+  // 5) Highlight + drop a pin on the selected spot.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    applySelected(map);
+  }, [selectedId, loaded]);
+
+  // 6) Swap the basemap when the theme changes, then re-add our layers.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;

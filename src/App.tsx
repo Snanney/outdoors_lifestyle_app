@@ -12,16 +12,19 @@ import { ChatWidget } from "./chat";
 import { useFavorites } from "./features/favorites";
 import { useTheme } from "./features/theme";
 import {
-  loadSpots,
+  loadBundledSpots,
+  loadLiveSpots,
   readJSON,
   writeJSON,
   type Spot,
   type SpotGeoJSON,
+  type SpotSource,
 } from "./lib";
 
 export default function App() {
   const [geojson, setGeojson] = useState<SpotGeoJSON | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
+  const [source, setSource] = useState<SpotSource>("bundled");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -41,11 +44,20 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    loadSpots()
-      .then(({ geojson, spots }) => {
+    // Progressive load: show the bundled sample instantly, then upgrade to
+    // live OpenStreetMap data if it's reachable (ADR-0010).
+    loadBundledSpots()
+      .then((bundled) => {
         if (cancelled) return;
-        setGeojson(geojson);
-        setSpots(spots);
+        setGeojson(bundled.geojson);
+        setSpots(bundled.spots);
+        return loadLiveSpots();
+      })
+      .then((live) => {
+        if (cancelled || !live) return;
+        setGeojson(live.geojson);
+        setSpots(live.spots);
+        setSource(live.source);
       })
       .catch((err: unknown) => {
         if (!cancelled) setLoadError(String(err));
@@ -115,8 +127,8 @@ export default function App() {
             {"\u26A0"}
           </span>
           <span className="app__notice-text">
-            <strong>Demo app.</strong> Trail data is hand-made and approximate,
-            for demonstration only &mdash; don&apos;t rely on it for navigation,
+            <strong>Demo app.</strong> Trail data is approximate and provided for
+            demonstration only &mdash; don&apos;t rely on it for navigation,
             planning, or safety.
           </span>
           <button
@@ -149,9 +161,23 @@ export default function App() {
           )}
 
           <div className="sidebar__count">
-            {loadError
-              ? "Could not load data."
-              : `${visibleSpots.length} of ${spots.length} spots`}
+            {loadError ? (
+              "Could not load data."
+            ) : (
+              <>
+                {`${visibleSpots.length} of ${spots.length} spots`}
+                <span
+                  className={`sidebar__source sidebar__source--${source}`}
+                  title={
+                    source === "live"
+                      ? "Live trail data from OpenStreetMap"
+                      : "Offline sample data"
+                  }
+                >
+                  {source === "live" ? "Live OSM" : "Offline sample"}
+                </span>
+              </>
+            )}
           </div>
 
           <TrailList
@@ -170,6 +196,7 @@ export default function App() {
             favorites={favoriteSet}
             filters={mapFilters}
             theme={theme}
+            selectedId={selectedId}
             onSelectSpot={handleSelect}
           />
         </main>
