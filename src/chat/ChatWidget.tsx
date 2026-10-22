@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getReply, SUGGESTIONS, WELCOME_MESSAGE } from "./chatEngine";
-import type { Spot } from "../lib";
+import { Icon, type Spot } from "../lib";
 
 interface ChatMessage {
   id: number;
@@ -18,7 +18,6 @@ let messageId = 0;
 const nextId = () => ++messageId;
 
 export function ChatWidget({ spots, onSelectSpot }: Props) {
-  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: nextId(), from: "bot", text: WELCOME_MESSAGE },
@@ -28,10 +27,10 @@ export function ChatWidget({ spots, onSelectSpot }: Props) {
   const spotById = (id: string) => spots.find((s) => s.id === id);
 
   useEffect(() => {
-    if (open && scrollRef.current) {
+    if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, open]);
+  }, [messages]);
 
   function send(text: string) {
     const trimmed = text.trim();
@@ -54,80 +53,63 @@ export function ChatWidget({ spots, onSelectSpot }: Props) {
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className="chat-fab"
-        aria-label={open ? "Close chat" : "Open trail guide chat"}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        {open ? "\u2715" : "\u{1F4AC}"}
-      </button>
+    <section className="chat chat--page" aria-label="Trail guide">
+      <header className="chat__header">
+        <h1 className="chat__title">Guide</h1>
+        <p className="chat__subtitle">Offline trail questions</p>
+      </header>
 
-      {open && (
-        <section className="chat" aria-label="Trail guide chat">
-          <header className="chat__header">
-            <span className="chat__title">Trail Guide</span>
-            <span className="chat__badge">offline</span>
-          </header>
-
-          <div className="chat__messages" ref={scrollRef}>
-            {messages.map((m) => (
-              <div key={m.id} className={`msg msg--${m.from}`}>
-                <div className="msg__bubble">{m.text}</div>
-                {m.spotIds && m.spotIds.length > 0 && (
-                  <div className="msg__chips">
-                    {m.spotIds.map((id) => {
-                      const spot = spotById(id);
-                      if (!spot) return null;
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          className="chip"
-                          onClick={() => {
-                            onSelectSpot(id);
-                            setOpen(false);
-                          }}
-                        >
-                          {spot.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+      <div className="chat__messages" ref={scrollRef}>
+        {messages.map((m) => (
+          <div key={m.id} className={`msg msg--${m.from}`}>
+            <div className="msg__bubble">{m.text}</div>
+            {m.spotIds && m.spotIds.length > 0 && (
+              <div className="msg__chips">
+                {m.spotIds.map((id) => {
+                  const spot = spotById(id);
+                  if (!spot) return null;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      className="chip"
+                      onClick={() => onSelectSpot(id)}
+                    >
+                      {spot.name}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
+        ))}
+      </div>
 
-          <div className="chat__suggestions">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className="chip chip--suggest"
-                onClick={() => send(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+      <div className="chat__suggestions">
+        {SUGGESTIONS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className="chip chip--suggest"
+            onClick={() => send(s)}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
 
-          <form className="chat__input" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={input}
-              placeholder="Ask about Utah trails..."
-              onChange={(e) => setInput(e.target.value)}
-              aria-label="Message the trail guide"
-            />
-            <button type="submit" aria-label="Send">
-              {"\u27A4"}
-            </button>
-          </form>
-        </section>
-      )}
-    </>
+      <form className="chat__input" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={input}
+          placeholder="Ask about Utah trails"
+          onChange={(e) => setInput(e.target.value)}
+          aria-label="Message the trail guide"
+        />
+        <button type="submit" aria-label="Send">
+          <Icon name="send" size={18} />
+        </button>
+      </form>
+    </section>
   );
 }

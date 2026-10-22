@@ -17,3 +17,5 @@ export type { SpotSource, LoadedSpots } from "./spots";
 export { loadLiveSpots } from "./overpass";
 export type { LiveProgress } from "./overpass";
 export { COLORS } from "./colors";
+export { Icon } from "./icons";
+export type { IconName } from "./icons";

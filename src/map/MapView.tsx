@@ -22,7 +22,7 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { flyToSpot, resize, basemap, ready } = useMapLibre({
+  const { flyToSpot, resize, ready } = useMapLibre({
     container: containerRef,
     geojson,
     favorites,
@@ -38,9 +38,6 @@ export const MapView = forwardRef<MapViewHandle, Props>(function MapView(
     <div className="map">
       <div ref={containerRef} className="map__canvas" />
       {!ready && <div className="map__loading">Loading map…</div>}
-      <div className="map__basemap" title="Active basemap">
-        {basemap.label}
-      </div>
     </div>
   );
 });

@@ -5,6 +5,7 @@ interface Props {
   filters: Filters;
   favoritesCount: number;
   onChange: (next: Filters) => void;
+  showSearch?: boolean;
 }
 
 const TYPE_OPTIONS: { value: FeatureType | "all"; label: string }[] = [
@@ -20,66 +21,75 @@ const DIFFICULTY_OPTIONS: { value: Difficulty | "all"; label: string }[] = [
   { value: "hard", label: "Hard" },
 ];
 
-export function TrailFilters({ filters, favoritesCount, onChange }: Props) {
+export function TrailFilters({
+  filters,
+  favoritesCount,
+  onChange,
+  showSearch = true,
+}: Props) {
   return (
     <div className="filters">
-      <input
-        type="search"
-        className="filters__search"
-        placeholder="Search trails & parks..."
-        value={filters.query}
-        onChange={(e) => onChange({ ...filters, query: e.target.value })}
-        aria-label="Search trails and parks"
-      />
+      {showSearch && (
+        <input
+          type="search"
+          className="filters__search"
+          placeholder="Search trails & parks"
+          value={filters.query}
+          onChange={(e) => onChange({ ...filters, query: e.target.value })}
+          aria-label="Search trails and parks"
+        />
+      )}
 
-      <div className="filters__row">
-        <label className="filters__field">
-          <span>Type</span>
-          <select
-            value={filters.type}
-            onChange={(e) =>
-              onChange({ ...filters, type: e.target.value as Filters["type"] })
-            }
-          >
-            {TYPE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="filters__field">
-          <span>Difficulty</span>
-          <select
-            value={filters.difficulty}
-            disabled={filters.type === "park"}
-            onChange={(e) =>
+      <div className="filters__group" role="group" aria-label="Type">
+        {TYPE_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            className={`filters__chip${filters.type === o.value ? " is-on" : ""}`}
+            aria-pressed={filters.type === o.value}
+            onClick={() =>
               onChange({
                 ...filters,
-                difficulty: e.target.value as Filters["difficulty"],
+                type: o.value,
+                difficulty: o.value === "park" ? "all" : filters.difficulty,
               })
             }
           >
-            {DIFFICULTY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+            {o.label}
+          </button>
+        ))}
       </div>
 
-      <label className="filters__fav">
-        <input
-          type="checkbox"
-          checked={filters.favoritesOnly}
-          onChange={(e) =>
-            onChange({ ...filters, favoritesOnly: e.target.checked })
-          }
-        />
-        <span>Favorites only ({favoritesCount})</span>
-      </label>
+      <div className="filters__group" role="group" aria-label="Difficulty">
+        {DIFFICULTY_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            className={`filters__chip${filters.difficulty === o.value ? " is-on" : ""}`}
+            aria-pressed={filters.difficulty === o.value}
+            disabled={filters.type === "park" && o.value !== "all"}
+            onClick={() =>
+              onChange({
+                ...filters,
+                difficulty: o.value,
+              })
+            }
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className={`filters__chip filters__chip--fav${filters.favoritesOnly ? " is-on" : ""}`}
+        aria-pressed={filters.favoritesOnly}
+        onClick={() =>
+          onChange({ ...filters, favoritesOnly: !filters.favoritesOnly })
+        }
+      >
+        Saved only ({favoritesCount})
+      </button>
     </div>
   );
 }

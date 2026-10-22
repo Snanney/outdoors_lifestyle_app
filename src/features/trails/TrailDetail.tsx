@@ -1,4 +1,4 @@
-import type { Spot } from "../../lib";
+import { Icon, type Spot } from "../../lib";
 
 interface Props {
   spot: Spot;
@@ -27,7 +27,7 @@ export function TrailDetail({
           onClick={onClose}
           aria-label="Close details"
         >
-          {"\u2715"}
+          <Icon name="close" size={18} />
         </button>
       </div>
 
@@ -52,14 +52,16 @@ export function TrailDetail({
           className={`btn${isFavorite ? " btn--active" : ""}`}
           onClick={() => onToggleFavorite(spot.id)}
         >
-          {isFavorite ? "\u2605 Saved" : "\u2606 Save"}
+          <Icon name="star" size={16} filled={isFavorite} />
+          {isFavorite ? "Saved" : "Save"}
         </button>
         <button
           type="button"
           className="btn"
           onClick={() => onCenter(spot)}
         >
-          Center on map
+          <Icon name="locate" size={16} />
+          Center
         </button>
         <a
           className="btn btn--link"
@@ -67,7 +69,8 @@ export function TrailDetail({
           target="_blank"
           rel="noreferrer"
         >
-          Open in maps
+          <Icon name="external" size={16} />
+          Maps
         </a>
       </div>
     </div>

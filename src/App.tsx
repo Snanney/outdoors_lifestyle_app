@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { MapView, type MapViewHandle } from "./map";
 import {
   TrailFilters,
@@ -9,38 +9,60 @@ import {
   type Filters,
 } from "./features/trails";
 import { ChatWidget } from "./chat";
-import { useFavorites } from "./features/favorites";
+import { SavedPage, useFavorites } from "./features/favorites";
 import { useTheme } from "./features/theme";
 import { SettingsPage } from "./features/settings";
 import {
+  TabBar,
+  useSheetDetent,
+  type AppTab,
+} from "./features/shell";
+import {
+  Icon,
   loadBundledSpots,
   loadLiveSpots,
-  readJSON,
-  writeJSON,
   type Spot,
   type SpotGeoJSON,
   type SpotSource,
 } from "./lib";
 
-type AppView = "explore" | "settings";
+function useIsCompact() {
+  const [compact, setCompact] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(max-width: 1024px)").matches
+      : false
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1024px)");
+    const onChange = () => setCompact(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  return compact;
+}
+
+function filtersAreActive(filters: Filters): boolean {
+  return (
+    filters.type !== "all" ||
+    filters.difficulty !== "all" ||
+    filters.favoritesOnly
+  );
+}
 
 export default function App() {
-  const [view, setView] = useState<AppView>("explore");
+  const compact = useIsCompact();
+  const [tab, setTab] = useState<AppTab>("explore");
   const [geojson, setGeojson] = useState<SpotGeoJSON | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [source, setSource] = useState<SpotSource>("bundled");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [panelOpen, setPanelOpen] = useState(true);
-  const [noticeDismissed, setNoticeDismissed] = useState<boolean>(() =>
-    readJSON<boolean>("noticeDismissed", false)
-  );
-
-  function dismissNotice() {
-    setNoticeDismissed(true);
-    writeJSON("noticeDismissed", true);
-  }
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const { detent, setDetent, dragY, consumeClick, handleProps } =
+    useSheetDetent("half");
 
   const mapRef = useRef<MapViewHandle | null>(null);
   const { favoriteSet, favoriteIds, isFavorite, toggleFavorite } = useFavorites();
@@ -48,8 +70,6 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    // Progressive load: show the bundled sample instantly, then upgrade to
-    // live OpenStreetMap data if it's reachable (ADR-0010).
     loadBundledSpots()
       .then((bundled) => {
         if (cancelled) return;
@@ -76,9 +96,19 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => mapRef.current?.resize());
+    return () => window.cancelAnimationFrame(id);
+  }, [detent, tab, compact]);
+
   const visibleSpots = useMemo(
     () => applyFilters(spots, filters, isFavorite),
     [spots, filters, isFavorite]
+  );
+
+  const savedSpots = useMemo(
+    () => spots.filter((s) => isFavorite(s.id)),
+    [spots, isFavorite]
   );
 
   const selectedSpot = useMemo(
@@ -86,95 +116,93 @@ export default function App() {
     [spots, selectedId]
   );
 
-  function collapseList() {
-    setPanelOpen(false);
-    // Let the sheet animation start, then tell MapLibre the visible map grew.
-    window.requestAnimationFrame(() => mapRef.current?.resize());
-  }
-
   function handleSelect(id: string) {
     setSelectedId(id);
     const spot = spots.find((s) => s.id === id);
     if (spot) mapRef.current?.flyToSpot(spot);
-    // Drop the list so the pin and callout are unobstructed. The "^" handle
-    // stays visible so the user can pull the list back up.
-    collapseList();
+    setTab("explore");
+    setDetent("peek");
+  }
+
+  function handleTab(next: AppTab) {
+    setTab(next);
+    if (next === "explore" && compact) setDetent("half");
   }
 
   const mapFilters = { type: filters.type, difficulty: filters.difficulty };
-
-  if (view === "settings") {
-    return (
-      <SettingsPage
-        theme={theme}
-        onThemeChange={setTheme}
-        onBack={() => setView("explore")}
-      />
-    );
-  }
+  const sheetStyle =
+    compact && dragY !== 0
+      ? ({ "--sheet-drag": `${dragY}px` } as CSSProperties)
+      : undefined;
 
   return (
-    <div className={`app${panelOpen ? "" : " app--sheet-collapsed"}`}>
+    <div
+      className={`app app--${tab}${compact ? ` app--sheet-${detent}` : ""}`}
+    >
       <header className="app__topbar">
-        <div className="app__brand">
+        <button
+          type="button"
+          className="app__brand"
+          onClick={() => handleTab("explore")}
+        >
           <span className="app__logo" aria-hidden="true">
-            {"\u26F0"}
+            <Icon name="mountain" size={18} filled />
           </span>
           <span className="app__name">Trailhead</span>
-          <span className="app__demo-badge" title="Demonstration app">
-            Demo
-          </span>
-          <span className="app__tag">Utah outdoors</span>
-        </div>
-        <div className="app__actions">
+        </button>
+        <nav className="app__actions" aria-label="App">
           <button
             type="button"
-            className="app__icon-btn"
-            onClick={() => setView("settings")}
-            aria-label="Open settings"
-            title="Settings"
+            className={`app__icon-btn${tab === "saved" ? " is-on" : ""}`}
+            onClick={() => handleTab("saved")}
+            aria-label="Saved trails"
+            aria-current={tab === "saved" ? "page" : undefined}
           >
-            {"\u2699\uFE0E"}
+            <Icon name="bookmark" size={20} filled={tab === "saved"} />
           </button>
-        </div>
+          <button
+            type="button"
+            className={`app__icon-btn${tab === "guide" ? " is-on" : ""}`}
+            onClick={() => handleTab("guide")}
+            aria-label="Trail guide"
+            aria-current={tab === "guide" ? "page" : undefined}
+          >
+            <Icon name="message" size={20} />
+          </button>
+          <button
+            type="button"
+            className={`app__icon-btn${tab === "settings" ? " is-on" : ""}`}
+            onClick={() => handleTab("settings")}
+            aria-label="Settings"
+            aria-current={tab === "settings" ? "page" : undefined}
+          >
+            <Icon name="settings" size={20} />
+          </button>
+        </nav>
       </header>
 
-      {!noticeDismissed && (
-        <div className="app__notice" role="note">
-          <span className="app__notice-icon" aria-hidden="true">
-            {"\u26A0"}
-          </span>
-          <span className="app__notice-text">
-            <strong>Demo app.</strong> Trail data is approximate and provided for
-            demonstration only &mdash; don&apos;t rely on it for navigation,
-            planning, or safety.
-          </span>
-          <button
-            type="button"
-            className="app__notice-close"
-            onClick={dismissNotice}
-            aria-label="Dismiss notice"
-          >
-            {"\u2715"}
-          </button>
-        </div>
-      )}
-
-      <div className="app__body">
-        <aside className={`sidebar${panelOpen ? "" : " sidebar--collapsed"}`}>
+      <div
+        className="app__body"
+        hidden={tab !== "explore"}
+        aria-hidden={tab !== "explore"}
+      >
+        <aside className="sidebar" style={sheetStyle}>
           <button
             type="button"
             className="sidebar__handle"
-            onClick={() => setPanelOpen((o) => !o)}
-            aria-expanded={panelOpen}
-            aria-label={panelOpen ? "Collapse trail list" : "Expand trail list"}
-            title={panelOpen ? "Collapse list" : "Expand list"}
+            aria-label={
+              detent === "peek" ? "Expand trail list" : "Resize trail list"
+            }
+            {...handleProps}
+            onClick={() => {
+              if (consumeClick()) return;
+              setDetent((d) =>
+                d === "peek" ? "half" : d === "half" ? "full" : "peek"
+              );
+            }}
           >
             <span className="sidebar__grabber" aria-hidden="true" />
-            <span className="sidebar__caret" aria-hidden="true">
-              {panelOpen ? "v" : "^"}
-            </span>
-            {!panelOpen && (
+            {detent === "peek" && (
               <span className="sidebar__peek">
                 <span className="sidebar__peek-name">
                   {selectedSpot ? selectedSpot.name : "Trail list"}
@@ -196,11 +224,13 @@ export default function App() {
           </button>
 
           <div className="sidebar__scroll">
-            <TrailFilters
-              filters={filters}
-              favoritesCount={favoriteIds.length}
-              onChange={setFilters}
-            />
+            {!compact && (
+              <TrailFilters
+                filters={filters}
+                favoritesCount={favoriteIds.length}
+                onChange={setFilters}
+              />
+            )}
 
             {selectedSpot && (
               <TrailDetail
@@ -213,23 +243,9 @@ export default function App() {
             )}
 
             <div className="sidebar__count">
-              {loadError ? (
-                "Could not load data."
-              ) : (
-                <>
-                  {`${visibleSpots.length} of ${spots.length} spots`}
-                  <span
-                    className={`sidebar__source sidebar__source--${source}`}
-                    title={
-                      source === "live"
-                        ? "Live trail data from OpenStreetMap"
-                        : "Offline sample data"
-                    }
-                  >
-                    {source === "live" ? "Live OSM" : "Offline sample"}
-                  </span>
-                </>
-              )}
+              {loadError
+                ? "Could not load data."
+                : `${visibleSpots.length} ${visibleSpots.length === 1 ? "place" : "places"}`}
             </div>
 
             <TrailList
@@ -243,6 +259,43 @@ export default function App() {
         </aside>
 
         <main className="app__map">
+          {compact && (
+            <div className="map-chrome">
+              <div className="map-search">
+                <Icon name="search" size={18} />
+                <input
+                  type="search"
+                  className="map-search__input"
+                  placeholder="Search trails & parks"
+                  value={filters.query}
+                  onChange={(e) =>
+                    setFilters({ ...filters, query: e.target.value })
+                  }
+                  onFocus={() => setDetent("half")}
+                  aria-label="Search trails and parks"
+                />
+                <button
+                  type="button"
+                  className={`map-search__filter${filtersOpen || filtersAreActive(filters) ? " is-on" : ""}`}
+                  aria-pressed={filtersOpen}
+                  aria-label="Filters"
+                  onClick={() => setFiltersOpen((o) => !o)}
+                >
+                  <Icon name="filter" size={18} />
+                </button>
+              </div>
+              {filtersOpen && (
+                <div className="map-chrome__filters">
+                  <TrailFilters
+                    filters={filters}
+                    favoritesCount={favoriteIds.length}
+                    onChange={setFilters}
+                    showSearch={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
           <MapView
             ref={mapRef}
             geojson={geojson}
@@ -255,7 +308,29 @@ export default function App() {
         </main>
       </div>
 
-      <ChatWidget spots={spots} onSelectSpot={handleSelect} />
+      {tab === "saved" && (
+        <SavedPage
+          spots={savedSpots}
+          selectedId={selectedId}
+          isFavorite={isFavorite}
+          onSelect={handleSelect}
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
+
+      {tab === "guide" && (
+        <ChatWidget spots={spots} onSelectSpot={handleSelect} />
+      )}
+
+      {tab === "settings" && (
+        <SettingsPage
+          theme={theme}
+          onThemeChange={setTheme}
+          source={source}
+        />
+      )}
+
+      <TabBar tab={tab} onChange={handleTab} />
     </div>
   );
 }

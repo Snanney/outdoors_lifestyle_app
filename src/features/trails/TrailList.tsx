@@ -1,4 +1,4 @@
-import { type Spot, COLORS } from "../../lib";
+import { Icon, type Spot, COLORS } from "../../lib";
 
 interface Props {
   spots: Spot[];
@@ -70,11 +70,11 @@ export function TrailList({
               type="button"
               className={`list__fav${fav ? " list__fav--on" : ""}`}
               aria-pressed={fav}
-              aria-label={fav ? "Remove favorite" : "Add favorite"}
-              title={fav ? "Remove favorite" : "Add favorite"}
+              aria-label={fav ? "Remove saved trail" : "Save trail"}
+              title={fav ? "Remove saved trail" : "Save trail"}
               onClick={() => onToggleFavorite(spot.id)}
             >
-              {fav ? "\u2605" : "\u2606"}
+              <Icon name="star" size={20} filled={fav} />
             </button>
           </li>
         );
